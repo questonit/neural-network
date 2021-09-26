@@ -1,4 +1,3 @@
-from typing import NewType
 import numpy as np
 from numpy.random.mtrand import randn
 
@@ -17,14 +16,7 @@ def read_data(filename, width):
     return data_in, data_out
 
 
-def sigmoid(z):
-    """The sigmoid function."""
-    return 1.0/(1.0+np.exp(-z))
 
-
-def sigmoid_prime(z):
-    """Derivative of the sigmoid function."""
-    return sigmoid(z)*(1-sigmoid(z))
 
 
 class NeuralNetwork:
@@ -35,12 +27,23 @@ class NeuralNetwork:
         self.weights = [np.random.randn(y, x) for x, y in zip(
             count_neurons[:-1], count_neurons[1:])]
 
+
+    def sigmoid(self, z):
+        """The sigmoid function."""
+        return 1.0/(1.0+np.exp(-z))
+
+
+    def sigmoid_prime(self, z):
+        """Derivative of the sigmoid function."""
+        return self.sigmoid(z)*(1-self.sigmoid(z))
+
+
     def feedforward(self, a):
         a = np.array(a)[np.newaxis].T
         w = self.weights
         b = self.biases
         for i in range(len(w) - 1):
-            a = sigmoid(np.dot(w[i], a) + b[i])
+            a = self.sigmoid(np.dot(w[i], a) + b[i])
         a = np.dot(w[-1], a) + b[-1]
         return a[0][0]
 
@@ -66,7 +69,7 @@ class NeuralNetwork:
                 z_x = [a0]
                 for i in range(len(w) - 1):
                     z0 = np.dot(w[i], a0) + b[i]
-                    a0 = sigmoid(z0)
+                    a0 = self.sigmoid(z0)
                     z_x.append(z0)
                     a_x.append(a0)
                 z0 = np.dot(w[-1], a0) + b[-1]
@@ -82,7 +85,7 @@ class NeuralNetwork:
                 dc_da = a[i][-1][0] - data_out[i]
                 dc.append([dc_da])
             dc = np.array(dc)
-            da = [[[sigmoid_prime(z0[-1][0][0])]]for z0 in z]
+            da = [[[self.sigmoid_prime(z0[-1][0][0])]]for z0 in z]
             da = np.array(da)
             nabla_l = np.multiply(dc, da)
             nabla.append(nabla_l)
@@ -96,7 +99,7 @@ class NeuralNetwork:
                 nabla_l = np.array(nabla_l)
                 da = []
                 for z0 in z:
-                    z1 = [sigmoid_prime(z00) for z00 in z0[l]]
+                    z1 = [self.sigmoid_prime(z00) for z00 in z0[l]]
                     da.append(z1)
                 da = np.array(da)
                 nabla_l = np.multiply(nabla_l, da)
